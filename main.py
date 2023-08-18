@@ -2,34 +2,36 @@ from telethon.sync import TelegramClient, events
 import asyncio
 
 # Replace these with your own values
-api_id = 'YOUR_API_ID'
-api_hash = 'YOUR_API_HASH'
+api_id = '26752628'
+api_hash = '99ae28f73ee1d7619a9d44d216dbe3f4'
 
 async def create_telegram_account():
     async with TelegramClient('anon', api_id, api_hash) as client:
-        print("Creating a new Telegram account...")
         try:
+            print("Creating a new Telegram account...")
+            
+            # Prompt for phone number
+            phone_number = input("Enter your phone number : ")
+
+            # Send code request and get phone_code_hash
+            sent_code = await client.send_code_request(phone_number)
+            phone_code_hash = sent_code.phone_code_hash
+
+            # Wait for user to enter the verification code
+            verification_code = input("Enter the verification code: ")
+
+            # Sign up with the provided code
             await client.sign_up(
-                phone_number='YOUR_PHONE_NUMBER',  # Replace with your phone number
+                phone_number,
+                verification_code,
                 first_name='YourFirstName',
                 last_name='YourLastName'
             )
 
             print("Account created successfully!")
 
-            @client.on(events.NewMessage(chats='me'))
-            async def on_message(event):
-                if "Your verification code" in event.message.message:
-                    verification_code = event.message.message.split(':')[1].strip()
-                    print(f"Received verification code: {verification_code}")
-                    await client.disconnect()
-
-            print("Waiting for the verification code...")
-            await client.send_message('me', 'Your verification code: 123456')  # Replace with the code you received
-
         except Exception as e:
             print("Error creating account:", e)
 
 if __name__ == '__main__':
     asyncio.run(create_telegram_account())
-
